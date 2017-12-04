@@ -5,7 +5,20 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+import dataset
+import os
+
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 tf.logging.set_verbosity(tf.logging.INFO)
+
+
+# Reads an image from a file, decodes it into a dense tensor, and resizes it
+# to a fixed shape.
+def _parse_function(filename, label):
+  image_string = tf.read_file(filename)
+  image_decoded = tf.image.decode_image(image_string)
+  image_resized = tf.image.resize_images(image_decoded, [800, 240])
+  return image_resized, label
 
 
 def cnn_model_fn(features, labels, mode):
@@ -102,12 +115,13 @@ def cnn_model_fn(features, labels, mode):
 
 
 def main(unused_argv):
-  # Load training and eval data
-  data = tf.contrib.learn.datasets.load_dataset("mnist")
-  train_data = data.train.images  # Returns np.array
-  train_labels = np.asarray(data.train.labels, dtype=np.int32)
-  eval_data = data.test.images  # Returns np.array
-  eval_labels = np.asarray(data.test.labels, dtype=np.int32)
+  # Load training and eval data  
+  #nmist = tf.contrib.learn.datasets.load_dataset("mnist")
+  nmist = dataset.read_data_sets('dataset/test_set', one_hot=True)
+  train_data = nmist.train.images  # Returns np.array
+  train_labels = np.asarray(nmist.train.labels, dtype=np.int32)
+  eval_data = nmist.test.images  # Returns np.array
+  eval_labels = np.asarray(nmist.test.labels, dtype=np.int32)
 
   # Create the Estimator
   maritime_classifier = tf.estimator.Estimator(
